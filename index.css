@@ -43,14 +43,16 @@ li:not(:has(input[type="checkbox"]:checked)) .label {
   background: rgb(242, 251, 243);
 }
 
-main:has(li:nth-child(7)) {
-  .add-button {
-    display: none;
-  }
+main:has(li:nth-child(7)) .add-button {
+  display: none;
   .limit-message {
     display: block;
   }
 }
+main:has(li:nth-child(7)) .limit-message {
+  display: block;
+}
+
 
 header {
   padding: 12px;
