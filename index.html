@@ -1,205 +1,230 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <link rel="shortcut icon" type="image/ico" href="favicon.ico" />
-    <link rel="manifest" href="manifest.json" />
-    <link rel="stylesheet" href="index.css" />
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <title>D6 Roller</title>
-  </head>
-  <body>
-    <header>
-      <h1>Dice chances</h1>
-      <p class="results">
-        <span id="rolls"></span>
-        <span id="percent"></span>
-      </p>
-      <main>
-        <form id="dice-form">
-          <ul id="dice-list"></ul>
-        </form>
-        <button id="add" class="add-button">
-          + Add <span class="dice-icon">⚅</span>
-        </button>
-        <button id="clear" class="add-button mt">Clear</button>
-      </main>
-    </header>
+  <link rel="shortcut icon" type="image/ico" href="favicon.ico" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="stylesheet" href="index.css" />
 
-    <script src="index.js"></script>
-    <script>
-      const getDiceFn = () => {
-        function getSequenceArray(min, max) {
-          return [...new Array(max - min + 1).keys()].map((v) => v + min);
-        }
+  <title>D6 Roller</title>
+</head>
 
-        function multiplyArray(array, permutations) {
-          const result = [];
-          for (const element of array) {
-            for (const p of permutations) {
-              result.push([...element, p]);
-            }
+<body>
+  <header>
+    <h1>Dice chances</h1>
+    <p class="results">
+      <span id="rolls"></span>
+      <span id="percent"></span>
+    </p>
+    <main>
+      <form id="dice-form">
+        <ul id="dice-list"></ul>
+      </form>
+      <button id="add" class="add-button">
+        + Add <span class="dice-icon">⚅</span>
+      </button>
+      <button id="clear" class="add-button mt">Clear</button>
+    </main>
+  </header>
+
+  <script src="index.js"></script>
+  <script>
+    const getDiceFn = () => {
+      const factorials = {
+        0: 1,
+        1: 1,
+        2: 2,
+        3: 6,
+        4: 24,
+        5: 120,
+        6: 720,
+        7: 5_040,
+        8: 40_320,
+        9: 362_880,
+        10: 3_628_800,
+        11: 39_916_800,
+        12: 479_001_600,
+      }
+      const fact = (num) => factorials[num]
+
+      /**
+       * { 2: true, 5: true} => [2, 5]
+       */
+      function trueSidesToArray(die) {
+        return Object.entries(die).filter(([side, value]) => !!value).map(([side, value]) => side)
+      }
+
+      function getAllUniquePermutations(dice) {
+        const set = new Set()
+        const results = [];
+        function getPermutation(dice, acc) {
+          if (!dice.length) {
+            const key = acc.sort((a, b) => a - b).join("-")
+            if (set.has(key)) return
+            set.add(key)
+
+            results.push(acc);
+            return;
           }
-          return result;
-        }
 
-        function getAllSequensePermutations(min, max, amount) {
-          const sequence = () => getSequenceArray(min, max);
-
-          let result = sequence().map((r) => [r]);
-          for (let i = 0; i < amount - 1; i++) {
-            result = multiplyArray(result, sequence());
+          const [newDie, ...restOfDice] = dice;
+          for (const side of newDie) {
+            getPermutation(restOfDice, [...acc, side]);
           }
-          return result;
         }
 
-        function hasDuplicates(array) {
-          return new Set(array).size < array.length;
+        getPermutation(dice, []);
+        return results;
+      }
+
+      function getFrequencyMap(numbers) {
+        const map = new Map();
+        for (const num of numbers) {
+          if (map.has(num)) {
+            map.set(num, map.get(num) + 1);
+          } else {
+            map.set(num, 1)
+          }
         }
+        return map;
+      }
 
-        function getAllArraySortings(array) {
-          if (!array.length) return [];
+      function getSamples(frequencies, n) {
+        const multiset = [...frequencies.values()].reduce((acc, v) => acc * fact(v), 1)
+        return fact(n) / multiset
+      }
 
-          const indexPermutations = getAllSequensePermutations(
-            0,
-            array.length - 1,
-            array.length
-          ).filter((permutation) => !hasDuplicates(permutation));
-          return indexPermutations.map((indexPermutation) =>
-            indexPermutation.map((index) => array[index])
-          );
-        }
 
-        function getD6(amount) {
-          if (!amount) return [];
-          return getAllSequensePermutations(1, 6, amount);
-        }
-
-        function isDiceResultAcceptedInSequense(dice, results) {
-          return results.every((result, index) => dice[+index][+result]);
-        }
-
-        function isDiceResultAccepted(dice, results) {
-          if (!results.length || !dice.length) return false;
-
-          return getAllArraySortings(results).some((result) =>
-            isDiceResultAcceptedInSequense(dice, result)
-          );
-        }
-
-        function getChanse(dice) {
-          const allRolls = getD6(dice.length);
-
-          const allAcceptedRolls = allRolls.filter((roll) =>
-            isDiceResultAccepted(dice, roll)
-          );
-
+      function getChanse(dice) {
+        if (!dice.length) {
           return {
-            rolls: `${allAcceptedRolls.length}/${allRolls.length}`,
-            percent: `${(
-              (allAcceptedRolls.length / allRolls.length) * 100 || 0
-            ).toFixed(4)}%`,
+            rolls: `0/0`,
+            percent: `0%`,
           };
         }
 
-        return getChanse;
-      };
+        const allRolls = Math.pow(6, dice.length);
 
-      const roll = getDiceFn();
+        if (dice.every(die => Object.values(die).every(side => side === true))) {
+          return {
+            rolls: `${allRolls}/${allRolls}`,
+            percent: `100%`,
+          };
+        }
 
-      const setRolls = (text) => (rolls.innerText = text);
-      const setPercent = (text) => (percent.innerText = text);
-      const initRoll = roll([]);
-      setRolls(initRoll.rolls);
-      setPercent(initRoll.percent);
+        const diceToArrays = dice.map(trueSidesToArray)
+        const permutations = getAllUniquePermutations(diceToArrays)
+        const samples = permutations.map(permutation => getSamples(getFrequencyMap(permutation), permutation.length))
+        const allAcceptedRolls = samples.reduce((acc, curr) => acc + curr, 0)
 
-      const diceList = document.getElementById("dice-list");
-
-      function calculateDice() {
-        const listElements = diceList.getElementsByTagName("li");
-        const dice = [...listElements]
-          .map((li) => {
-            const inputs = li.getElementsByTagName("input");
-            return {
-              1: inputs[0].checked,
-              2: inputs[1].checked,
-              3: inputs[2].checked,
-              4: inputs[3].checked,
-              5: inputs[4].checked,
-              6: inputs[5].checked,
-            };
-          })
-          .map((die) => {
-            if (Object.values(die).every((side) => side === false)) {
-              return {
-                1: true,
-                2: true,
-                3: true,
-                4: true,
-                5: true,
-                6: true,
-              };
-            }
-
-            return die;
-          });
-        const chanse = roll(dice);
-        setRolls(chanse.rolls);
-        setPercent(chanse.percent);
-      }
-
-      function addDie() {
-        const inputs = ["1", "2", "3", "4", "5", "6"].map((side) => {
-          const checkbox = document.createElement("input");
-          checkbox.type = "checkbox";
-          checkbox.name = "side";
-
-          const span = document.createElement("span");
-          span.className = "label";
-          span.innerText = side;
-
-          const label = document.createElement("label");
-          label.append(checkbox, span);
-
-          return label;
-        });
-
-        const button = document.createElement("button");
-        button.className = "minus-button";
-        button.innerText = "✕";
-
-        const li = document.createElement("li");
-        const removeLi = () => {
-          diceList.removeChild(li);
-          calculateDice();
+        return {
+          rolls: `${allAcceptedRolls}/${allRolls}`,
+          percent: `${(
+            (allAcceptedRolls / allRolls) * 100 || 0
+          ).toFixed(4)}%`,
         };
-        button.addEventListener("click", removeLi, { once: true });
-
-        li.append(...inputs, button);
-
-        diceList.append(li);
-
-        calculateDice();
       }
 
-      function clearDice() {
-        diceList.innerHTML = "";
-        calculateDice();
-      }
+      return getChanse;
+    };
 
-      document.getElementById("add").addEventListener("click", () => {
-        addDie();
-      });
-      document.getElementById("clear").addEventListener("click", () => {
-        clearDice();
+    const roll = getDiceFn();
+
+    const setRolls = (text) => (rolls.innerText = text);
+    const setPercent = (text) => (percent.innerText = text);
+    const initRoll = roll([]);
+    setRolls(initRoll.rolls);
+    setPercent(initRoll.percent);
+
+    const diceList = document.getElementById("dice-list");
+
+    function calculateDice() {
+      const listElements = diceList.getElementsByTagName("li");
+      const dice = [...listElements]
+        .map((li) => {
+          const inputs = li.getElementsByTagName("input");
+          return {
+            1: inputs[0].checked,
+            2: inputs[1].checked,
+            3: inputs[2].checked,
+            4: inputs[3].checked,
+            5: inputs[4].checked,
+            6: inputs[5].checked,
+          };
+        })
+        .map((die) => {
+          if (Object.values(die).every((side) => side === false)) {
+            return {
+              1: true,
+              2: true,
+              3: true,
+              4: true,
+              5: true,
+              6: true,
+            };
+          }
+
+          return die;
+        });
+      const chanse = roll(dice);
+      setRolls(chanse.rolls);
+      setPercent(chanse.percent);
+    }
+
+    function addDie() {
+      const inputs = ["1", "2", "3", "4", "5", "6"].map((side) => {
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.name = "side";
+
+        const span = document.createElement("span");
+        span.className = "label";
+        span.innerText = side;
+
+        const label = document.createElement("label");
+        label.append(checkbox, span);
+
+        return label;
       });
 
-      const diceForm = document.getElementById("dice-form");
-      diceForm.addEventListener("change", (e) => {
+      const button = document.createElement("button");
+      button.className = "minus-button";
+      button.innerText = "✕";
+
+      const li = document.createElement("li");
+      const removeLi = () => {
+        diceList.removeChild(li);
         calculateDice();
-      });
-    </script>
-  </body>
+      };
+      button.addEventListener("click", removeLi, { once: true });
+
+      li.append(...inputs, button);
+
+      diceList.append(li);
+
+      calculateDice();
+    }
+
+    function clearDice() {
+      diceList.innerHTML = "";
+      calculateDice();
+    }
+
+    document.getElementById("add").addEventListener("click", () => {
+      addDie();
+    });
+    document.getElementById("clear").addEventListener("click", () => {
+      clearDice();
+    });
+
+    const diceForm = document.getElementById("dice-form");
+    diceForm.addEventListener("change", (e) => {
+      calculateDice();
+    });
+  </script>
+</body>
+
 </html>
