@@ -1,0 +1,81 @@
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
+    "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+input[type="checkbox"] {
+  display: none;
+}
+.label {
+  border: 1px solid #000;
+  display: inline-grid;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  cursor: pointer;
+  margin-left: 2px;
+}
+.label:hover {
+  outline: 1px solid gray;
+}
+label:last-of-type {
+  margin-right: 8px;
+}
+
+input[type="checkbox"]:checked + .label {
+  background: rgb(205, 236, 206);
+}
+
+ul {
+  padding-left: 24px;
+  margin-bottom: 4px;
+}
+li {
+  padding-bottom: 12px;
+}
+
+li:not(:has(input[type="checkbox"]:checked)) .label {
+  background: rgb(242, 251, 243);
+}
+
+header {
+  padding: 12px;
+}
+.results {
+  display: flex;
+  justify-content: space-between;
+  max-width: 300px;
+}
+
+.add-button {
+  min-width: 32px;
+  min-height: 32px;
+  display: flex;
+  align-items: center;
+  line-height: 1;
+  margin-left: 16px;
+}
+.minus-button {
+  margin-top: 4px;
+  margin-left: 2px;
+  font-size: small;
+  line-height: 1.6;
+}
+
+.dice-icon {
+  margin-left: 6px;
+  font-size: 30px;
+}
+
+main {
+  user-select: none;
+}
+
+.mt {
+  margin-top: 16px;
+}

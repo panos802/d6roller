@@ -1,0 +1,36 @@
+{
+  "name": "D6-Roller",
+  "short_name": "D6-Roll",
+  "theme_color": "#4287f5",
+  "background_color": "#ffffff",
+  "display": "standalone",
+  "scope": "/d6roller/",
+  "start_url": "/d6roller/",
+  "icons": [
+    {
+      "src": "/d6roller/assets/logo192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/d6roller/assets/logo512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/d6roller/assets/screenshot1.png",
+      "sizes": "400x600",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/d6roller/assets/screenshot2.png",
+      "sizes": "720x600",
+      "type": "image/png",
+      "purpose": "any",
+      "form_factor": "wide"
+    }
+  ]
+}
