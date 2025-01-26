@@ -15,8 +15,8 @@ input[type="checkbox"] {
   display: inline-grid;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
+  width: 40px;
+  height: 40px;
   cursor: pointer;
   margin-left: 2px;
 }
@@ -43,6 +43,15 @@ li:not(:has(input[type="checkbox"]:checked)) .label {
   background: rgb(242, 251, 243);
 }
 
+main:has(li:nth-child(7)) {
+  .add-button {
+    display: none;
+  }
+  .limit-message {
+    display: block;
+  }
+}
+
 header {
   padding: 12px;
 }
@@ -52,13 +61,17 @@ header {
   max-width: 300px;
 }
 
-.add-button {
+.button {
   min-width: 32px;
   min-height: 32px;
   display: flex;
   align-items: center;
   line-height: 1;
   margin-left: 16px;
+}
+.limit-message {
+  display: none;
+  padding-left: 16px;
 }
 .minus-button {
   margin-top: 4px;
