@@ -1,7 +1,7 @@
 {
   "name": "D6-Roller",
   "short_name": "D6-Roll",
-  "theme_color": "#4287f5",
+  "theme_color": "#000000",
   "background_color": "#ffffff",
   "display": "standalone",
   "scope": "/d6roller/",
