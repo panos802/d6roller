@@ -45,9 +45,6 @@ li:not(:has(input[type="checkbox"]:checked)) .label {
 
 main:has(li:nth-child(7)) .add-button {
   display: none;
-  .limit-message {
-    display: block;
-  }
 }
 main:has(li:nth-child(7)) .limit-message {
   display: block;
